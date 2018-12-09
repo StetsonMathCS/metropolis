@@ -2,6 +2,12 @@
 :- set_prolog_flag(double_quotes, codes).
 :- set_prolog_flag(back_quotes, string).
 
+% e.g., readManyNmapGreppableOutputs(['../../security-course/nmap/10.80.0.0.log', '../../security-course/nmap/10.50.0.0.log'], Hosts).
+
+readManyNmapGreppableOutputs(Filenames, Hosts) :-
+    maplist(readNmapGreppableOutput, Filenames, HostsLists),
+    append(HostsLists, Hosts).
+
 readNmapGreppableOutput(Filename, Hosts) :-
     absolute_file_name(Filename, NmapFile),
     read_file_to_codes(NmapFile, NmapCodes, []),
