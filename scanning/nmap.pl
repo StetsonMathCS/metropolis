@@ -1,8 +1,27 @@
 
+
+% create nmap output: nmap -sV -oG mysubnet.log -v 10.50.3.244/24
+
+
+% user functions
+
+% e.g., loadHosts(['../../security-course/nmap/10.80.0.0.log', '../../security-course/nmap/10.50.0.0.log']).
+% asserted structures: host(IpAddr, Hostname, up, [port(PortNum, State, Protocol, Owner, Service, RpcInfo, Version), ...])
+loadHosts(Filenames) :-
+    readManyNmapGreppableOutputs(Filenames, Hosts),
+    maplist(assertz, Hosts).
+
+hostByIp(IpAddr, host(IpAddr, Hostname, Status, Ports)) :-
+    host(IpAddr, Hostname, Status, Ports).
+
+hostsWithOpenPort(Port, IpAddrs) :-
+    findall(IpAddr, (host(IpAddr, _, up, Ports), member(port(Port, open, _, _, _, _, _), Ports)), IpAddrs).
+
+
+% implementation details
+
 :- set_prolog_flag(double_quotes, codes).
 :- set_prolog_flag(back_quotes, string).
-
-% e.g., readManyNmapGreppableOutputs(['../../security-course/nmap/10.80.0.0.log', '../../security-course/nmap/10.50.0.0.log'], Hosts).
 
 readManyNmapGreppableOutputs(Filenames, Hosts) :-
     maplist(readNmapGreppableOutput, Filenames, HostsLists),
@@ -11,7 +30,7 @@ readManyNmapGreppableOutputs(Filenames, Hosts) :-
 readNmapGreppableOutput(Filename, Hosts) :-
     absolute_file_name(Filename, NmapFile),
     read_file_to_codes(NmapFile, NmapCodes, []),
-    nmapHosts(Hosts, NmapCodes, []).
+    nmapHosts(Hosts, NmapCodes, []), !.
 
 nmapHosts([]) --> "".
 nmapHosts([]) --> "#", ignoreRestOfLine, newlines.
