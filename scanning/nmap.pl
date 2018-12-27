@@ -1,4 +1,5 @@
 
+:- [machinecats].
 
 % create nmap output: nmap -sV -oG mysubnet.log -v 10.50.3.244/24
 
@@ -17,6 +18,16 @@ hostByIp(IpAddr, host(IpAddr, Hostname, Status, Ports)) :-
 hostsWithOpenPort(Port, IpAddrs) :-
     findall(IpAddr, (host(IpAddr, _, up, Ports), member(port(Port, open, _, _, _, _, _), Ports)), IpAddrs).
 
+printHost(Host) :-
+    Host = host([A,B,C,D], Hostname, Status, Ports),
+    (machinecat(Cat, Host) ; Cat = 'unknown'),
+    format("~d.~d.~d.~d~t~17|<~s>~35|(~s)~n", [A,B,C,D,Cat,Hostname]),
+    printPorts(Ports).
+
+printPorts([]).
+printPorts([port(PortNum, State, Protocol, Owner, Service, RpcInfo, Version)|Ports]) :-
+    format("  ~d/~s~t~15|~s~t~25|~s~t~45|~s\n", [PortNum, Protocol, State, Service, Version]),
+    printPorts(Ports).
 
 % implementation details
 
